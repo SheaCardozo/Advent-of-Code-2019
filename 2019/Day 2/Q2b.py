@@ -14,21 +14,19 @@ backup = prompt.copy()
 def run_sequence(seq):
 
     for i in range(0, len(seq), 4):
-
-        if seq[i] == 99:
-            break
-        elif seq[i] == 1:
+        if seq[i] == 1:
             seq[seq[i + 3]] = seq[seq[i + 1]] + seq[seq[i + 2]]
-        elif prompt[i] == 2:
+        elif seq[i] == 2:
             seq[seq[i + 3]] = seq[seq[i + 1]] * seq[seq[i + 2]]
         else:
-            print('error')
+            assert seq[i] == 99
+            break
 
     return seq
 
 
-for p in range(0, 99):
-    for q in range(0, 99):
+for p in range(100):
+    for q in range(100):
         prompt = backup.copy()
         prompt[1] = p
         prompt[2] = q
