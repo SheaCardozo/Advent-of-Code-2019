@@ -1,3 +1,19 @@
-from utils import puzzle_input
+with open('Q2.txt', 'r') as f:
+    prompt = f.read()
 
-inp = puzzle_input('Q2.txt')
+prompt = prompt.strip()
+prompt = prompt.split(',')
+
+prompt = list(map(int, prompt))
+
+for i in range(0, len(prompt), 4):
+    if prompt[i] == 99:
+        break
+    elif prompt[i] == 1:
+        prompt[prompt[i + 3]] = prompt[prompt[i + 1]] + prompt[prompt[i + 2]]
+    elif prompt[i] == 2:
+        prompt[prompt[i + 3]] = prompt[prompt[i + 1]] * prompt[prompt[i + 2]]
+    else:
+        print('error')
+
+print(prompt[0])
