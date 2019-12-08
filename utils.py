@@ -3,3 +3,4 @@ def puzzle_input(path):
         prompt = f.read()
 
     return prompt.split()
+
