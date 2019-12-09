@@ -18,4 +18,4 @@ for i in range(150):
 for j in range(6):
     print(image[j*25: (j+1)*25].replace('0', ' '))
 
-#Printed answer is FHJUL
+# Printed answer is FHJUL
