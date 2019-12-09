@@ -1,4 +1,4 @@
-from utils import puzzle_input
+from utils import Intcode
 
 with open('Q2.txt', 'r') as f:
     prompt = f.read()
@@ -8,32 +8,25 @@ prompt = prompt.split(',')
 
 prompt = list(map(int, prompt))
 
-backup = prompt.copy()
 
+class Part2b(Intcode):
 
-def run_sequence(seq):
+    def _input(self):
+        return 0
 
-    for i in range(0, len(seq), 4):
-        if seq[i] == 1:
-            seq[seq[i + 3]] = seq[seq[i + 1]] + seq[seq[i + 2]]
-        elif seq[i] == 2:
-            seq[seq[i + 3]] = seq[seq[i + 1]] * seq[seq[i + 2]]
-        else:
-            assert seq[i] == 99
-            break
-
-    return seq
+    def _output(self, out):
+        pass
 
 
 for p in range(100):
     for q in range(100):
-        prompt = backup.copy()
-        prompt[1] = p
-        prompt[2] = q
+        codes = prompt.copy()
+        codes[1] = p
+        codes[2] = q
 
-        prompt = run_sequence(prompt)
+        ic = Part2b(codes)
+        ic.run()
 
-        if prompt[0] == 19690720:
+        if ic.codes[0] == 19690720:
             print(p*100 + q)
             break
-

@@ -1,3 +1,5 @@
+from utils import Intcode
+
 with open('Q2.txt', 'r') as f:
     prompt = f.read()
 
@@ -6,13 +8,20 @@ prompt = prompt.split(',')
 
 prompt = list(map(int, prompt))
 
-for i in range(0, len(prompt), 4):
-    if prompt[i] == 1:
-        prompt[prompt[i + 3]] = prompt[prompt[i + 1]] + prompt[prompt[i + 2]]
-    elif prompt[i] == 2:
-        prompt[prompt[i + 3]] = prompt[prompt[i + 1]] * prompt[prompt[i + 2]]
-    else:
-        assert prompt[i] == 99
-        break
+prompt[1] = 12
+prompt[2] = 2
 
-print(prompt[0])
+
+class Part2a(Intcode):
+
+    def _input(self):
+        return 0
+
+    def _output(self, out):
+        pass
+
+
+ic = Part2a(prompt)
+ic.run()
+print(ic.codes[0])
+
