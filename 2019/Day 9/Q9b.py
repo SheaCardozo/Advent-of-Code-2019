@@ -1,7 +1,7 @@
 from utils import Intcode
 
-with open('Q9.txt', 'r') as op:
-    prompt = op.read()
+with open('Q9.txt', 'r') as f:
+    prompt = f.read()
 
 prompt = prompt.strip()
 prompt = prompt.split(',')

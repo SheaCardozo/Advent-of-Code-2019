@@ -1,5 +1,5 @@
-with open('Q8.txt', 'r') as op:
-    prompt = op.read()
+with open('Q8.txt', 'r') as f:
+    prompt = f.read()
 
 prompt = prompt.strip()
 layers = []

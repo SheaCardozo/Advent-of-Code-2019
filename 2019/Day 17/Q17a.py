@@ -1,6 +1,6 @@
 from utils import Intcode
 
-with open('Q5.txt', 'r') as f:
+with open('Q17.txt', 'r') as f:
     prompt = f.read()
 
 prompt = prompt.strip()
@@ -9,14 +9,16 @@ prompt = prompt.split(',')
 prompt = list(map(int, prompt))
 
 
-class Part5b(Intcode):
+class Part17a(Intcode):
 
     def _input(self):
-        return 5
+        return 0
 
     def _output(self, out):
         print(out)
+        return
 
 
-ic = Part5b(prompt)
+ic = Part17a(prompt)
 ic.run()
+
