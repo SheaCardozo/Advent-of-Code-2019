@@ -1,74 +1,109 @@
-from math import ceil, floor
+from utils import Intcode
+from random import randint
 
-with open('Q14.txt', 'r') as f:
+with open('Q15.txt', 'r') as f:
     prompt = f.read()
 
 prompt = prompt.strip()
-prompt = prompt.split('\n')
+prompt = prompt.split(',')
 
-recs = {}
-for k in prompt:
-    rec = k.split('=>')
-    rec[0] = rec[0].strip().split(',')
-    rec[1] = rec[1].strip().split(' ')
-    assert rec[1][1] not in recs
-    recs[rec[1][1]] = {'num': int(rec[1][0]), 'ing': {}}
-    for p in rec[0]:
-        p = p.strip().split(' ')
-        recs[rec[1][1]]['ing'][p[1]] = int(p[0])
+prompt = list(map(int, prompt))
 
+tiles = dict()
 
-def get_level(r, recs):
-    if 'ORE' in recs[r]['ing']:
-        return 1
-    else:
-        ret = 0
-        for i in recs[r]['ing']:
-            ret = max(ret, get_level(i, recs)) + 1
-        return ret
+pos = (0, 0)
+oxy = False
+tiles = {}
+count = 0
+
+tried = set()
+
+prevm = None
+
+movements = []
 
 
-for r in recs:
-    recs[r]['lvl'] = get_level(r, recs)
+def get_shortest_path(m):
+    movements = m
+    while True:
+        done = True
+        n = []
+        i = 0
+        while True:
+            if i > len(movements) - 1:
+                break
+            elif i == len(movements) - 1:
+                n.append(movements[-1])
+                break
+            a = movements[i]
+            b = movements[i + 1]
+
+            if a + b == 3 or a + b == 7:
+                i += 1
+                done = False
+            else:
+                n.append(a)
+
+            i += 1
+        movements = n
+        if done:
+            break
+    return len(movements)
 
 
-def combine_ings(ingsa, ingsb):
-    for k, v in ingsb.items():
-        if k in ingsa:
-            ingsa[k] += v
-        else:
-            ingsa[k] = v
-    return ingsa
+class Part15b(Intcode):
+
+    def _input(self):
+        global prevm
+        m = None
+        while m is None or m in tried:
+            m = randint(1, 4)
+        tried.add(m)
+        prevm = m
+        return m
+
+    def _output(self, out):
+        global oxy
+        global tried
+        global prevm
+        global pos
+        global movements
+        global count
+        if out == 2 and not oxy:
+            movements = []
+            oxy = True
+        elif out == 1 or out == 2:
+            tried.clear()
+            if oxy:
+                movements.append(prevm)
+            if prevm == 1:
+                pos = pos[0], pos[1] - 1
+                prevm = 2
+            elif prevm == 2:
+                pos = pos[0], pos[1] + 1
+                prevm = 1
+            elif prevm == 3:
+                pos = pos[0] - 1, pos[1]
+                prevm = 4
+            else:
+                pos = pos[0] + 1, pos[1]
+                prevm = 3
+            if oxy:
+                if pos in tiles:
+                    count += 1
+                    if count > 1000000:
+                        raise EOFError
+                else:
+                    tiles[pos] = get_shortest_path(movements)
+                    count = 0
+            tried.add(prevm)
+        elif out == 0:
+            if len(tried) == 4:
+                tried.clear()
 
 
-MAX_LVL = recs['FUEL']['lvl']
-MAX_ORE = 1000000000000
+ic = Part15b(prompt)
+ic.run()
 
-num_fuel = floor(MAX_ORE/720484) #from part a
-last = None
-
-while True:
-    ings = recs['FUEL']['ing'].copy()
-
-    for k in ings:
-        ings[k] = ings[k] * ceil(num_fuel/recs['FUEL']['num'])
-    for i in range(MAX_LVL, 0, -1):
-        dec = {}
-        rem = set()
-        for k in ings:
-            if recs[k]['lvl'] == i:
-                brk = recs[k]['ing'].copy()
-                for p in brk:
-                    brk[p] = brk[p] * ceil(ings[k]/recs[k]['num'])
-                dec = combine_ings(dec, brk)
-                rem.add(k)
-        for k in rem:
-            ings.pop(k)
-        ings = combine_ings(ings, dec)
-    if ings['ORE'] > MAX_ORE:
-        num_fuel -= 1
-        break
-    else:
-        num_fuel += 1
-
-print(num_fuel)
+m = max([tiles[i] for i in tiles])
+print(m)
