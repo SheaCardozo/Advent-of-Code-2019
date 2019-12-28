@@ -4,7 +4,7 @@ with open('Q20.txt', 'r') as f:
 prompt = prompt.split('\n')
 
 grid = []
-current = 0, 0
+current = 0, 0, 0
 warps = {}
 
 for i in prompt:
@@ -37,10 +37,12 @@ for i in range(len(grid)):
 
 for i in warps:
     if warps[i] == 'AA':
-        current = i[0], i[1]
+        current = i[0], i[1], 0
+    if warps[i] == 'ZZ':
+        goal = i[0], i[1], 0
 
-
-warps.pop(current)
+warps.pop((current[0], current[1]))
+warps.pop((goal[0], goal[1]))
 
 
 def find_path(pos, grid):
@@ -48,19 +50,29 @@ def find_path(pos, grid):
     dist = {pos: 0}
 
     while len(points) > 0:
+        if goal in dist:
+            return dist[goal]
         check = points[0]
         points = points[1:]
-        if check in warps:
+        if (check[0], check[1]) in warps:
             for i in warps:
-                if i != check and warps[i] == warps[check]:
-                    if i not in dist:
-                        dist[i] = dist[check] + 1
-                        points.append(i)
+                if i != (check[0], check[1]) and warps[i] == warps[(check[0], check[1])]:
+                    if 96 >= check[0] >= 36 and 96 >= check[1] >= 36:
+                        z = check[2] + 1
+                        if (i[0], i[1], z) not in dist:
+                            dist[i[0], i[1], z] = dist[check] + 1
+                            points.append((i[0], i[1], z))
+                    else:
+                        z = check[2] - 1
+                        if (i[0], i[1], z) not in dist and z >= 0:
+                            dist[i[0], i[1], z] = dist[check] + 1
+                            points.append((i[0], i[1], z))
+
         for p in (
-            (check[0] + 1, check[1]),
-            (check[0] - 1, check[1]),
-            (check[0], check[1] + 1),
-            (check[0], check[1] - 1),
+            (check[0] + 1, check[1], check[2]),
+            (check[0] - 1, check[1], check[2]),
+            (check[0], check[1] + 1, check[2]),
+            (check[0], check[1] - 1, check[2]),
         ):
             if not (0 <= p[0] < len(grid) and 0 <= p[1] < len(grid[0])):
                 continue
@@ -71,11 +83,6 @@ def find_path(pos, grid):
                 continue
             dist[p] = dist[check] + 1
             points.append(p)
-    return dist
 
 
-distances = find_path(current, grid)
-
-for i in warps:
-    if warps[i] == 'ZZ':
-        print(distances[i])
+print(find_path(current, grid))
