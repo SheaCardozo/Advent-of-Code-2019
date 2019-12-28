@@ -1,109 +1,78 @@
-from utils import Intcode
-import cmath
-
-with open('Q17.txt', 'r') as f:
+with open('Q18b.txt', 'r') as f:
     prompt = f.read()
 
-prompt = prompt.strip()
-prompt = prompt.split(',')
+prompt = prompt.split()
 
-prompt = list(map(int, prompt))
+grid = []
+starts = []
 
-#Used to find A,B,C
-'''
-field = [[]]
+for i in prompt:
+    grid.append([])
+    for j in i:
+        grid[-1].append(j)
 
-
-class Part17a(Intcode):
-
-    def _input(self):
-        return 0
-
-    def _output(self, out):
-        global field
-
-        out = chr(out)
-        if out == '\n':
-            field.append([])
-        else:
-            field[-1].append(out)
-        return
+for i in range(len(grid)):
+    for j in range(len(grid[0])):
+        if grid[i][j] == '@':
+            starts.append((i,j))
 
 
-ic = Part17a(prompt)
-ic.run()
+def find_keys(pos, grid, found):
+    points = [pos]
+    dist = {pos: 0}
+    keys = {}
 
-while True:
-    if len(field[-1]) == 0:
-        field = field[:-1]
+    while len(points) > 0:
+        check = points[0]
+        points = points[1:]
+        for p in (
+            (check[0] + 1, check[1]),
+            (check[0] - 1, check[1]),
+            (check[0], check[1] + 1),
+            (check[0], check[1] - 1),
+        ):
+            if not (0 <= p[0] < len(grid) and 0 <= p[1] < len(grid[0])):
+                continue
+            c = grid[p[0]][p[1]]
+            if c == '#':
+                continue
+            if p in dist:
+                continue
+            dist[p] = dist[check] + 1
+            if 'A' <= c <= 'Z' and c.lower() not in found:
+                continue
+            if 'a' <= c <= 'z' and c not in found:
+                keys[c] = dist[p], p
+            else:
+                points.append(p)
+    return keys
+
+
+def reachable4(grid, starts, havekeys):
+    keys = {}
+    for i, start in enumerate(starts):
+        for ch, (dist, pt) in find_keys(start, grid, havekeys).items():
+            keys[ch] = dist, pt, i
+    return keys
+
+
+def minwalk(grid, starts, found):
+    hks = ''.join(sorted(found))
+    if (starts, hks) in seen:
+        return seen[starts, hks]
+    keys = reachable4(grid, starts, found)
+    if len(keys) == 0:
+        ans = 0
     else:
-        break
-
-bot = None
-face = -1+0j
-
-for y in range(len(field)):
-    for x in range(len(field[0])):
-        if field[y][x] == '^':
-            bot = x, y
-
-path = []
-
-for x in field:
-    print("".join(x))
+        poss = []
+        for ch, (dist, pt, roi) in keys.items():
+            nstarts = tuple(pt if i == roi else p for i, p in enumerate(starts))
+            poss.append(dist + minwalk(grid, nstarts, found + ch))
+        ans = min(poss)
+    seen[starts, hks] = ans
+    return ans
 
 
-def inbounds(lst, y, x, k):
-    if 0 <= y < len(lst):
-        if 0 <= x < len(lst[0]):
-            return lst[y][x] == k
-    return False
+seen = {}
 
-
-while True:
-    if inbounds(field, bot[1] + int(face.real), bot[0] + int(face.imag), '#'):
-        path[-1] += 1
-        bot = bot[0] + int(rot.imag), bot[1] + int(rot.real)
-    else:
-        rot = face * 1j
-        if inbounds(field, bot[1] + int(rot.real), bot[0] + int(rot.imag), '#'):
-            face = rot
-            path.append('L')
-            path.append(0)
-            continue
-        rot = face * -1j
-        if inbounds(field, bot[1] + int(rot.real), bot[0] + int(rot.imag), '#'):
-            face = rot
-            path.append('R')
-            path.append(0)
-            continue
-        break
-
-'''
-prompt[0] = 2
-
-A = 'R,8,L,12,R,8\n'
-B = 'L,10,L,10,R,8\n'
-C = 'L,12,L,12,L,10,R,10\n'
-
-path = 'A,A,B,C,B,C,B,A,C,A\n'
-
-inp = path + A + B + C + 'n\n'
-
-i = -1
-
-
-class Part17b(Intcode):
-
-    def _input(self):
-        global i
-        i += 1
-        print(ord(inp[i]))
-        return ord(inp[i])
-
-    def _output(self, out):
-        print(out)
-
-
-ic = Part17b(prompt)
-ic.run()
+print(minwalk(grid, tuple(starts), ''))
